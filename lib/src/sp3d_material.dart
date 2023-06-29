@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:simple_3d/src/sp3d_paint_style.dart';
+
 ///
 /// (en) Flutter implementation of Sp3dMaterial.
 /// Sp3dMaterial is a class used in Sp3dObj that handles information such as colors.
@@ -20,6 +22,8 @@ class Sp3dMaterial {
   Color strokeColor;
   int? imageIndex;
   List<Offset>? textureCoordinates;
+  BlendMode? blendMode;
+  Sp3dPaintStyle? paintStyle;
   Map<String, dynamic>? option;
 
   /// Constructor
@@ -30,9 +34,15 @@ class Sp3dMaterial {
   /// * [imageIndex] : Invalid if null. When fill is enabled and there are 4 vertex, fill with image with the clockwise order as the vertices from the upper left.
   /// * [textureCoordinates] : You can specify the part of the image that you want to cut out and use. Use by specifying the coordinate information for the image.
   /// Specify the coordinates counterclockwise with a triangle(3 vertices) or rectangle(There are two triangles. 6 vertices).
+  /// * [blendMode] : Algorithms to use when painting the image on the face.
+  /// * [paintStyle] : A description of the parameters to apply when drawing the image.
   /// * [option] : Optional attributes that may be added for each app.
   Sp3dMaterial(this.bg, this.isFill, this.strokeWidth, this.strokeColor,
-      {this.imageIndex, this.textureCoordinates, this.option});
+      {this.imageIndex,
+      this.textureCoordinates,
+      this.blendMode,
+      this.paintStyle,
+      this.option});
 
   /// Convert the object to a dictionary.
   Sp3dMaterial deepCopy() {
@@ -49,6 +59,8 @@ class Sp3dMaterial {
     return Sp3dMaterial(mbg, isFill, strokeWidth, msc,
         imageIndex: imageIndex,
         textureCoordinates: tCoord,
+        blendMode: blendMode,
+        paintStyle: paintStyle?.deepCopy(),
         option: option != null ? {...option!} : null);
   }
 
@@ -60,6 +72,8 @@ class Sp3dMaterial {
   /// * [imageIndex] : Invalid if null. When fill is enabled and there are 4 vertex, fill with image with the clockwise order as the vertices from the upper left.
   /// * [textureCoordinates] : You can specify the part of the image that you want to cut out and use. Use by specifying the coordinate information for the image.
   /// Specify the coordinates counterclockwise with a triangle(3 vertices) or rectangle(There are two triangles. 6 vertices).
+  /// * [blendMode] : Algorithms to use when painting the image on the face.
+  /// * [paintStyle] : A description of the parameters to apply when drawing the image.
   /// * [option] : Optional attributes that may be added for each app.
   Sp3dMaterial copyWith(
       {Color? bg,
@@ -68,6 +82,8 @@ class Sp3dMaterial {
       Color? strokeColor,
       int? imageIndex,
       List<Offset>? textureCoordinates,
+      BlendMode? blendMode,
+      Sp3dPaintStyle? paintStyle,
       Map<String, dynamic>? option}) {
     List<Offset>? tCoord;
     if (textureCoordinates == null) {
@@ -88,6 +104,8 @@ class Sp3dMaterial {
             Color.fromARGB(this.strokeColor.alpha, this.strokeColor.red,
                 this.strokeColor.green, this.strokeColor.blue),
         imageIndex: imageIndex ?? this.imageIndex,
+        blendMode: blendMode ?? this.blendMode,
+        paintStyle: paintStyle ?? this.paintStyle,
         textureCoordinates: textureCoordinates ?? tCoord,
         option: option ?? (option != null ? {...option} : null));
   }
@@ -116,6 +134,8 @@ class Sp3dMaterial {
     ];
     d['image_index'] = imageIndex;
     d['texture_coordinates'] = tCoord;
+    d['blend_mode'] = blendMode?.name;
+    d['paint_style'] = paintStyle?.toDict();
     d['option'] = option;
     return d;
   }
@@ -144,6 +164,14 @@ class Sp3dMaterial {
     return Sp3dMaterial(mbg, src['is_fill'], src['stroke_width'], msc,
         imageIndex: src['image_index'],
         textureCoordinates: tCoord,
+        blendMode: src.containsKey('blend_mode') && src['blend_mode'] != null
+            ? BlendMode.values.asNameMap()[src['blend_mode']]
+            : null,
+        paintStyle: src.containsKey('paint_style')
+            ? src['paint_style'] != null
+                ? Sp3dPaintStyle.fromDict(src['paint_style'])
+                : null
+            : null,
         option: src['option']);
   }
 }
